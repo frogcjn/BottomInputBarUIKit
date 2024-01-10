@@ -19,6 +19,7 @@ class TableNC: UINavigationController {
     
     let guideView =  KeyboardLayoutGuideView()
     
+    var systemSpacing: CGFloat = 0
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -33,9 +34,12 @@ class TableNC: UINavigationController {
         view.addSubview(guideView)
         
         view.keyboardLayoutGuide.usesBottomSafeArea = false
-
+        
+        let topConstraints = textField.topAnchor.constraint(equalToSystemSpacingBelow: backdrop.topAnchor, multiplier: 1.0)
+        systemSpacing = topConstraints.constant
+        
         let constraints = [
-            textField.topAnchor.constraint(equalToSystemSpacingBelow: backdrop.topAnchor, multiplier: 1.0),
+            topConstraints,
             backdrop.bottomAnchor.constraint(greaterThanOrEqualToSystemSpacingBelow: textField.bottomAnchor, multiplier: 1.0),
             textField.leadingAnchor.constraint(equalToSystemSpacingAfter: backdrop.leadingAnchor, multiplier: 1.0),
             backdrop.trailingAnchor.constraint(equalToSystemSpacingAfter: textField.trailingAnchor, multiplier: 1.0),
@@ -58,15 +62,17 @@ class TableNC: UINavigationController {
     }
     
     func updateHeight() {
-        let height = backdrop.frame.height
-        
-        print(height)
-        
         // keyboardDismissPadding
-        view.keyboardLayoutGuide.keyboardDismissPadding = height
+        view.keyboardLayoutGuide.keyboardDismissPadding = backdrop.frame.height
         
         // additionalSafeAreaInsets
-        topViewController?.additionalSafeAreaInsets = UIEdgeInsets(top: 0, left: 0, bottom: height, right: 0)
+        guard let topViewController, let view = view else {
+            return
+        }
+        
+        let backdropFrame = view.convert(backdrop.bounds, from: backdrop)
+        let bottom = max(0, view.safeAreaLayoutGuide.layoutFrame.maxY - backdropFrame.minY)
+        topViewController.additionalSafeAreaInsets = UIEdgeInsets(top: 0, left: 0, bottom: bottom, right: 0)
     }
     
 }
